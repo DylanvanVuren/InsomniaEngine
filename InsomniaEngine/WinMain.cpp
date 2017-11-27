@@ -1,6 +1,5 @@
 // include the basic windows header files
 #include <windows.h>
-#include <windowsx.h>
 #include <tchar.h>
 
 // define the screen resolution
