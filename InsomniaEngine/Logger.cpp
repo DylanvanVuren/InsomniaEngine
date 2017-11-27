@@ -1,10 +1,15 @@
 // basic file operations
-#include <iostream>
-#include <fstream>
+#include "logger.h"
 
-void Write() {
-	std::ofstream myfile;
-	myfile.open("example.txt");
-	myfile << "Writing this to a file." << std::endl;
-	myfile.close();
+Logger::Logger(char* fname) {
+	o_stream.open(fname);
+}
+
+void Logger::Write(char* text) {
+	o_stream << text << std::endl;
+}
+
+Logger::~Logger() {
+	o_stream.flush();
+	o_stream.close();
 }
