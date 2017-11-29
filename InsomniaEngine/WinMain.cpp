@@ -93,7 +93,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 	ShowWindow(hWnd, nCmdShow);
 
-	//ShowWindow(hWnd2, nCmdShow);		// show second window
+	ShowWindow(hWnd2, nCmdShow);		// show second window
 
 
 	// set up and initialize Direct3D
