@@ -21,19 +21,7 @@
     <ClCompile Include="WinMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Renderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ResourceManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Texture.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ResourceTexture.cpp">
+    <ClCompile Include="Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -41,17 +29,8 @@
     <ClInclude Include="Logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Renderer.h">
+    <ClInclude Include="Window.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Texture.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ResourceTexture.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ResourceManager.h">
-      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
