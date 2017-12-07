@@ -1,3 +1,4 @@
+/*
 #include "Renderer.h"
 
 LPDIRECT3D9 d3d;    // the pointer to our Direct3D interface
@@ -330,3 +331,4 @@ void Renderer::translate()
 void Renderer::render()
 {
 }
+*/
