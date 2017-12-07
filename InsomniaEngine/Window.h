@@ -13,7 +13,7 @@ public:
 
 	
 
-	HWND getWindow();
+	HWND getHandle();
 
 private:
 

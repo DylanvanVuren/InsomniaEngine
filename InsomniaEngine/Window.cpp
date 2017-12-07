@@ -48,7 +48,7 @@ LRESULT WINAPI Window::MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
-HWND Window::getWindow()
+HWND Window::getHandle()
 {
 	return hWnd;
 }
