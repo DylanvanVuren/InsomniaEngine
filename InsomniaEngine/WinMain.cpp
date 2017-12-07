@@ -3,6 +3,7 @@
 #include <tchar.h>
 #include <d3d9.h>
 #include <d3dx9.h>
+#include "Window.h"
 
 // define the screen resolution
 #define SCREEN_WIDTH  900
@@ -37,67 +38,11 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	LPSTR lpCmdLine,
 	int nCmdShow)
 {
-	HWND hWnd;
-	HWND hWnd2;
-
-	WNDCLASSEX wc;
-	WNDCLASSEX wc2;
-
-
-	ZeroMemory(&wc, sizeof(WNDCLASSEX));
-	ZeroMemory(&wc2, sizeof(WNDCLASSEX));
-
-
-	wc.cbSize = sizeof(WNDCLASSEX);
-	wc.style = CS_HREDRAW | CS_VREDRAW;
-	wc.lpfnWndProc = WindowProc;
-	wc.hInstance = hInstance;
-	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-	//wc.hbrBackground = (HBRUSH)COLOR_WINDOW; // to leave the background color untouched.
-	wc.lpszClassName = _T("WindowClass");
-
-	wc2.cbSize = sizeof(WNDCLASSEX);
-	wc2.style = CS_HREDRAW | CS_VREDRAW;
-	wc2.lpfnWndProc = WindowProc;
-	wc2.hInstance = hInstance;
-	wc2.hCursor = LoadCursor(NULL, IDC_ARROW);
-	//wc.hbrBackground = (HBRUSH)COLOR_WINDOW; // to leave the background color untouched.
-	wc2.lpszClassName = _T("WindowClass2");
-
-	RegisterClassEx(&wc);
-
-	RegisterClassEx(&wc2);
-
-
-	hWnd = CreateWindowEx(NULL,
-		_T("WindowClass"),
-		_T(""),
-		WS_EX_TOPMOST | WS_OVERLAPPEDWINDOW,
-		0, 0, // start position should be 0 for fullscreen
-		SCREEN_WIDTH, SCREEN_HEIGHT,
-		NULL,
-		NULL,
-		hInstance,
-		NULL);
-
-	hWnd2 = CreateWindowEx(NULL,
-		_T("WindowClass2"),
-		_T(""),
-		WS_EX_TOPMOST | WS_OVERLAPPEDWINDOW,
-		0, 0, // start position should be 0 for fullscreen
-		SCREEN_WIDTH, SCREEN_HEIGHT,
-		NULL,
-		NULL,
-		hInstance,
-		NULL);
-
-	ShowWindow(hWnd, nCmdShow);
-
-	ShowWindow(hWnd2, nCmdShow);		// show second window
-
+	
+	Window window;
 
 	// set up and initialize Direct3D
-	initD3D(hWnd);
+	initD3D(window.getWindow());
 
 	// enter the main loop:
 
