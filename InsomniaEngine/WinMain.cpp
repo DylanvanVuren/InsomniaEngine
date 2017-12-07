@@ -42,7 +42,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	Window window;
 
 	// set up and initialize Direct3D
-	initD3D(window.getWindow());
+	initD3D(window.getHandle());
 
 	// enter the main loop:
 
