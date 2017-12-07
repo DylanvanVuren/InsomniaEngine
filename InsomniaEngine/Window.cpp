@@ -4,7 +4,7 @@
 Window::Window()
 {
 	//UNREFERENCED_PARAMETER(hInst);
-
+	//
 	// Register the window class
 	wc =
 	{
