@@ -1,4 +1,4 @@
-// include the basic windows header files
+/*// include the basic windows header files
 #include <windows.h>
 #include <tchar.h>
 #include <d3d9.h>
@@ -338,4 +338,35 @@ void init_graphics(void)
 	i_buffer->Lock(0, 0, (void**)&pVoid, 0);
 	memcpy(pVoid, indices, sizeof(indices));
 	i_buffer->Unlock();
+}*/
+#include "logger.h"
+#include <cstdlib>
+#include <windows.h>
+#include <tchar.h>
+
+int main(void) {
+	Logger *pLog = new Logger("errors.txt");
+	/*pLog->Write("Start");
+	for (int i = 0; i < 100; i++) {
+		char c[50];
+		sprintf_s(c, "Looped: %d times", i);
+		pLog->Write(c);
+	}
+	return 0;*/
+	char* text = "checking number size";
+	try
+	{
+		pLog->Write(Logger::Debug, text);
+
+		int i = 10;
+		if (i > 10)
+		{
+			throw(std::string("number too big"));
+		}
+	}
+	catch (char* str)
+	{
+		pLog->Write(Logger::Error, str);
+			exit(EXIT_FAILURE);
+	}
 }
