@@ -4,6 +4,7 @@
 #define SCREEN_WIDTH  900
 #define SCREEN_HEIGHT 800
 
+
 Renderer::Renderer()
 {
 	
@@ -47,6 +48,8 @@ void Renderer::initD3D(HWND hWnd)
 	d3ddev->SetRenderState(D3DRS_LIGHTING, FALSE);    // turn off the 3D lighting
 
 	d3ddev->SetRenderState(D3DRS_ZENABLE, TRUE);    // turn on the z-buffer
+
+	d3ddev->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);	// wireframe action
 }
 
 void Renderer::render_frame(void) 
