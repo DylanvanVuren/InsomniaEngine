@@ -3,21 +3,32 @@
 #include <Windows.h>
 #include <string>
 
+#define Debug 0
+#define Warning 1
+#define Info 2
+#define Error 3
+
+/*
+//logger types
+enum LOGTYPE {
+	Debug,
+	Warning,
+	Error,
+	Info
+};
+*/
+
 class Logger{
 	public:
-		//logger types
-		enum LOGTYPE {
-			Debug,
-			Warning,
-			Error,
-			Info
-		};
 		//Logger constructor requires file name
-		Logger(char* fname);
+		Logger();
 		//Destruct logger and close the filestream
 		~Logger();
+		void setFile(char* fname);
 		//Write to the file requiring text(char)
-		void Write(LOGTYPE ltype, char* line);
+		void Write(int ltype, char* line);
+		void Write(char* line);
+		void setLogLvl(int lvl);
 		//char& deterTime();
 		std::string deterTime();
 		static const std::string PRIORITY_NAMES[];
