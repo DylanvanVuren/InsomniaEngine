@@ -27,6 +27,9 @@
 #include <d3d9.h>
 #include <D3DX9tex.h>
 #include <string>
+#include <stdio.h> //need these for the ATL conversion helper
+#include <atldef.h>
+#include <atlstr.h>
 
 class Texture
 {
@@ -42,14 +45,16 @@ public:
 	//maybe it's HRESULT GetTexture(); ?
 	std::string GetName();
 
+	//getters
 	int GetWidth();
 	int GetHeight();
 
 private:
-	int m_width;
+	int m_width;  // m_ means a member variable (as opposed to a local variable), it's not necessary but good practice
 	int m_height;
 	
-	HRESULT m_texture; //not sure what type it is?
+	HRESULT m_texture; //not sure what type it is? is it implied Texture?
+	
 	std::string m_name;
 	int m_width;
 	int m_height;
@@ -76,19 +81,20 @@ private:
 	}
 
 
-	bool Texture::Initialize(IDirect3DDevice9* device, LPCTSTR fileName)
+	//this is a wrapper for all that needs to be done to initialize a texture
+	bool Texture::Initialize(IDirect3DDevice9* device, LPCTSTR fileName) 
 	{
 		HRESULT result;
-
-		m_name = fileName;
-		//int pos = m_name.find_last_of("/");
-		//if (pos >= 0)
-		//{
-		//m_name = m_name.substr(pos + 1, m_name.length());
-		//}
-		//m_name = m_name.substr(0, m_name.find_last_of("."));
+		
+		m_name = CT2A(fileName); // CT2A is converting CHAR to std::string, it's an ATL(Active Template Library) conversion helper "CX2Y", where X is a current state and Y a state you want to convert to
+		int pos = m_name.find_last_of("/"); //find the last forward slash
+		if (pos >= 0)
+		{
+		m_name = m_name.substr(pos + 1, m_name.length()); //if it has a root directory - remove it
+		}
+		m_name = m_name.substr(0, m_name.find_last_of(".")); //remove our extention
 	
-		//loading the texture
+		//loading the texture from an image file
 		result = D3DXCreateTextureFromFile(device, fileName);
 		if (FAILED(result))
 		{
