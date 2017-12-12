@@ -4,6 +4,8 @@
 #include <d3d9.h>
 #include <d3dx9.h>
 #include "Window.h"
+#include "Renderer.h"
+#include "Kernel.h"
 
 // define the screen resolution
 #define SCREEN_WIDTH  900
@@ -30,19 +32,30 @@ void init_graphics(void);    // 3D declarations
 struct CUSTOMVERTEX { FLOAT X, Y, Z; DWORD COLOR; };
 #define CUSTOMFVF (D3DFVF_XYZ | D3DFVF_DIFFUSE)
 
-LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam); // the WindowProc function prototype
+//LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam); // the WindowProc function prototype
 
-																					// the entry point for any Windows program
+//LRESULT WINAPI WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+//LRESULT (*pfnWindowProc) (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+// the entry point for any Windows program
 int WINAPI WinMain(HINSTANCE hInstance,
 	HINSTANCE hPrevInstance,
 	LPSTR lpCmdLine,
 	int nCmdShow)
 {
-	
+
 	Window window;
 
+	Renderer renderer;
+
+	renderer.initD3D(window.getHandle());
+
+
+	//pfnWindowProc = WindowProc;
+
 	// set up and initialize Direct3D
-	initD3D(window.getHandle());
+	//initD3D(window.getHandle());
 
 	// enter the main loop:
 
@@ -58,15 +71,18 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 		if (msg.message == WM_QUIT)
 			break;
-		render_frame();
+		
+		renderer.render_frame();
 	}
 
 	// clean up DirectX and COM
-	cleanD3D();
+	
+	renderer.cleanD3D();
 
 	return msg.wParam;
 }
 
+/*
 // this is the main message handler for the program
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -74,6 +90,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	{
 	case WM_DESTROY:
 	{
+		MessageBox(0, L"Joe", L"j", MB_OK);
 		PostQuitMessage(0);
 		return 0;
 	} break;
@@ -106,6 +123,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
+*/
 
 // this function initializes and prepares Direct3D for use
 void initD3D(HWND hWnd)

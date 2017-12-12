@@ -1,149 +1,20 @@
-/*
+
 #include "Renderer.h"
 
-LPDIRECT3D9 d3d;    // the pointer to our Direct3D interface
-LPDIRECT3DDEVICE9 d3ddev;    // the pointer to the device class
-LPDIRECT3DVERTEXBUFFER9 v_buffer = NULL;    // the pointer to the vertex buffer	
-LPDIRECT3DINDEXBUFFER9 i_buffer = NULL;    // the pointer to the index buffer
-LPDIRECT3DTEXTURE9      g_pTexture = NULL; // Our texture
+#define SCREEN_WIDTH  900
+#define SCREEN_HEIGHT 800
 
-struct CUSTOMVERTEX { FLOAT X, Y, Z; DWORD COLOR; };
-#define CUSTOMFVF (D3DFVF_XYZ | D3DFVF_DIFFUSE)
-
-LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);// the WindowProc function prototype
-// the entry point for any Windows program
-
-int WINAPI WinMain(HINSTANCE hInstance,
-	HINSTANCE hPrevInstance,
-	LPSTR lpCmdLine,
-	int nCmdShow)
+Renderer::Renderer()
 {
-	HWND hWnd;
-	HWND hWnd2;
-
-	WNDCLASSEX wc;
-	WNDCLASSEX wc2;
-
-
-	ZeroMemory(&wc, sizeof(WNDCLASSEX));
-	ZeroMemory(&wc2, sizeof(WNDCLASSEX));
-
-
-	wc.cbSize = sizeof(WNDCLASSEX);
-	wc.style = CS_HREDRAW | CS_VREDRAW;
-	wc.lpfnWndProc = WindowProc;
-	wc.hInstance = hInstance;
-	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-	//wc.hbrBackground = (HBRUSH)COLOR_WINDOW; // to leave the background color untouched.
-	wc.lpszClassName = _T("WindowClass");
-
-	wc2.cbSize = sizeof(WNDCLASSEX);
-	wc2.style = CS_HREDRAW | CS_VREDRAW;
-	wc2.lpfnWndProc = WindowProc;
-	wc2.hInstance = hInstance;
-	wc2.hCursor = LoadCursor(NULL, IDC_ARROW);
-	//wc.hbrBackground = (HBRUSH)COLOR_WINDOW; // to leave the background color untouched.
-	wc2.lpszClassName = _T("WindowClass2");
-
-	RegisterClassEx(&wc);
-
-	RegisterClassEx(&wc2);
-
-
-	hWnd = CreateWindowEx(NULL,
-		_T("WindowClass"),
-		_T(""),
-		WS_EX_TOPMOST | WS_OVERLAPPEDWINDOW,
-		0, 0, // start position should be 0 for fullscreen
-		SCREEN_WIDTH, SCREEN_HEIGHT,
-		NULL,
-		NULL,
-		hInstance,
-		NULL);
-
-	hWnd2 = CreateWindowEx(NULL,
-		_T("WindowClass2"),
-		_T(""),
-		WS_EX_TOPMOST | WS_OVERLAPPEDWINDOW,
-		0, 0, // start position should be 0 for fullscreen
-		SCREEN_WIDTH, SCREEN_HEIGHT,
-		NULL,
-		NULL,
-		hInstance,
-		NULL);
-
-	ShowWindow(hWnd, nCmdShow);
-
-	ShowWindow(hWnd2, nCmdShow);		// show second window
-
-
-										// set up and initialize Direct3D
-	initD3D(hWnd);
-
-	// enter the main loop:
-
-	MSG msg;
-
-	while (TRUE)
-	{
-		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-
-		if (msg.message == WM_QUIT)
-			break;
-		render_frame();
-	}
-
-	// clean up DirectX and COM
-	cleanD3D();
-
-	return msg.wParam;
+	
 }
 
-LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+Renderer::~Renderer()
 {
-	switch (message)
-	{
-	case WM_DESTROY:
-	{
-		PostQuitMessage(0);
-		return 0;
-	} break;
-
-	case WM_KEYDOWN:
-		if (wParam == 0x57) // W-key pressed
-		{
-			MessageBox(0, L"W Key pressed", L"Key Pressed", MB_OK);
-		}
-
-		if (wParam == 0x53)	//S-key pressed
-		{
-			MessageBox(0, L"S Key pressed", L"Key Pressed", MB_OK);
-		}
-
-		if (wParam == 0x41)	//A-key pressed
-		{
-			MessageBox(0, L"A Key pressed", L"Key Pressed", MB_OK);
-		}
-
-		if (wParam == 0x44)	//D-key pressed
-		{
-			MessageBox(0, L"D Key pressed", L"Key Pressed", MB_OK);
-		}
-
-
-		break;
-
-	}
-
-	return DefWindowProc(hWnd, message, wParam, lParam);
+	
 }
 
-// this function initializes and prepares Direct3D for use
-void initD3D(HWND hWnd)
+void Renderer::initD3D(HWND hWnd)
 {
 	d3d = Direct3DCreate9(D3D_SDK_VERSION);    // create the Direct3D interface
 
@@ -176,12 +47,9 @@ void initD3D(HWND hWnd)
 	d3ddev->SetRenderState(D3DRS_LIGHTING, FALSE);    // turn off the 3D lighting
 
 	d3ddev->SetRenderState(D3DRS_ZENABLE, TRUE);    // turn on the z-buffer
-
-
 }
 
-// this is the function used to render a single frame
-void render_frame(void)
+void Renderer::render_frame(void) 
 {
 	// clear the window
 	d3ddev->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
@@ -245,21 +113,16 @@ void render_frame(void)
 	d3ddev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 8, 0, 12);
 
 	d3ddev->Present(NULL, NULL, NULL, NULL);   // displays the created frame on the screen
-
-
 }
 
-
-// this is the function that cleans up Direct3D and COM
-void cleanD3D(void)
+void Renderer::cleanD3D(void)
 {
 	v_buffer->Release();    // close and release the vertex buffer
 	d3ddev->Release();    // close and release the 3D device
 	d3d->Release();    // close and release Direct3D
 }
 
-// this is the function that puts the 3D models into video RAM
-void init_graphics(void)
+void Renderer::init_graphics(void)
 {
 	// create the vertices using the CUSTOMVERTEX struct
 	CUSTOMVERTEX vertices[] =
@@ -319,16 +182,3 @@ void init_graphics(void)
 	memcpy(pVoid, indices, sizeof(indices));
 	i_buffer->Unlock();
 }
-
-void Renderer::cleanup()
-{
-}
-
-void Renderer::translate()
-{
-}
-
-void Renderer::render()
-{
-}
-*/
