@@ -24,14 +24,12 @@ class Logger{
 		Logger();
 		//Destruct logger and close the filestream
 		~Logger();
-		void setFile(char* fname);
-		//Write to the file requiring text(char)
+		//void setFile(char* fname);
+		//Write to the file requiring text(char) and the log level
 		void Write(int ltype, char* line);
 		void Write(char* line);
-		void setLogLvl(int lvl);
-		//char& deterTime();
+		//Set the time and calculate milis
 		std::string deterTime();
-		static const std::string PRIORITY_NAMES[];
 
 	private:
 		std::ofstream o_stream;

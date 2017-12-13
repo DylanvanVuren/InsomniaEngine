@@ -1,0 +1,6 @@
+[1:2:45:661] 	 LOG 	 Log name is 	 logfile.txt
+[1:2:45:661] 	 LOG 	 Logging level 	 0
+[1:2:45:661] 	 LOG 	 Logging start
+
+[1:2:45:661] 	 Error 	  
+[1:2:45:661] 	 errno 	 Domain error
