@@ -3,7 +3,7 @@
 #include <time.h>
 
 static const char* ftxt = "logfile.txt";
-static int logLevel = 0;
+static int logLevel;
 static std::string offset = " \t ";
 
 Logger::Logger() {
@@ -11,9 +11,23 @@ Logger::Logger() {
 	
 	//Set top of log file
 	o_stream << deterTime() << offset << "LOG" << offset << "Log name is" << offset << ftxt << std::endl;
-	o_stream << deterTime() << offset << "LOG" << offset << "Logging level" << offset << logLevel << std::endl;
+	o_stream << deterTime() << offset << "LOG" << offset << "Logging level" << offset << logLevel << std::endl; //have to adjust
 	o_stream << deterTime() << offset << "LOG" << offset << "Logging start\n" << std::endl;
 }
+//int Logger::WriteStack(int i) {
+//	i = errno;
+//	NL_RETURN(i);
+//}
+
+//void Logger::WriteStack() {
+//	StackWImpl sw;
+//	sw.ShowCallstack();
+//}
+//
+//std::string Logger::WriteStack() {
+//	StackWImpl sw;
+//	return sw.terug;
+//}
 
 std::string Logger::deterTime() {
 	SYSTEMTIME stime;
@@ -28,7 +42,7 @@ std::string Logger::deterTime() {
 	FileTimeToSystemTime(&ltime, &stime);//convert in system time and store in stime
 
 	//Store text format in TimeStamp for output
-	sprintf(TimeStamp, "[%d:%d:%d:%d]", stime.wHour, stime.wMinute, stime.wSecond, stime.wMilliseconds);
+	sprintf_s(TimeStamp, "[%d:%d:%d:%d]", stime.wHour, stime.wMinute, stime.wSecond, stime.wMilliseconds);
 	return TimeStamp;
 }
 
@@ -36,8 +50,12 @@ void Logger::Write(char* text) {
 	o_stream << deterTime() << text << std::endl;
 }
 
-void Logger::Write(int lvl, char* text) {
+void Logger::Write(int lvl) {
+	o_stream << lvl << std::endl;
 	logLevel = lvl;
+}
+
+void Logger::Write(int lvl, char* text) {
 
 	if (lvl == Debug){
 		o_stream << deterTime() << offset << "Debug" << offset << text << std::endl;
@@ -49,8 +67,15 @@ void Logger::Write(int lvl, char* text) {
 	}
 	else if (lvl == Error) {
 		o_stream << deterTime() << offset << "Error" << offset << text << std::endl;
-		o_stream << deterTime() << offset << "errno" << offset << std::strerror(errno) << std::endl;
+		o_stream << deterTime() << offset << "errno\n" << offset << offset << std::strerror(errno) << std::endl;
+		o_stream << deterTime() << offset << "Trace" << std::endl;
+		//o_stream << offset << offset << "Error at: " << std::string(__FUNCTION__) << "(line:" << __LINE__ << ")"  << std::endl;
+		//o_stream << offset << offset << offset << WriteStack() << std::endl;//WriteStack();
+		//o_stream << offset << offset << offset << WriteStack() << std::endl;
+		StackWImpl sw;
+		sw.ShowCallstack();
 	}
+	logLevel = lvl;
 }
 
 Logger::~Logger() {
