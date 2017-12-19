@@ -42,15 +42,13 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 		if (msg.message == WM_QUIT)
 			break;
-		
-		renderer.render_frame();
+
+		renderer.render_scene();
 	}
 
 	// clean up DirectX and COM
-	
+
 	renderer.cleanD3D();
 
 	return msg.wParam;
 }
-
-
