@@ -40,19 +40,12 @@ bool Renderer::initD3D(HWND hWnd)
 	//d3dpp.MultiSampleType = D3DMULTISAMPLE_;
 
 	// create a device class using this information and the info from the d3dpp stuc
-
-	d3d->CreateDevice(D3DADAPTER_DEFAULT,
-		D3DDEVTYPE_HAL,
-		hWnd,
+	if (FAILED(d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
 		D3DCREATE_SOFTWARE_VERTEXPROCESSING,
-		&d3dpp,
-		&d3ddev);
-	//if (FAILED(d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
-	//	D3DCREATE_SOFTWARE_VERTEXPROCESSING,
-	//	&d3dpp, &d3ddev))) {
-	//	MessageBox(0, TEXT("Failed to create Direct3D Device"), TEXT("Error"), MB_OK);
-	//	return false;
-	//}
+		&d3dpp, &d3ddev))) {
+		MessageBox(0, TEXT("Failed to create Direct3D Device"), TEXT("Error"), MB_OK);
+		return false;
+	}
 	//d3ddev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
 	//Onderse 3 setrstate misg weg?
@@ -62,56 +55,76 @@ bool Renderer::initD3D(HWND hWnd)
 	d3ddev->SetRenderState(D3DRS_AMBIENT, 0xffffffff);
 
 	//d3ddev->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);	// wireframe action
-
-	//if (FAILED(d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
-	//	D3DCREATE_SOFTWARE_VERTEXPROCESSING,
-	//	&d3dpp, &d3ddev))) {
-	//	MessageBox(0, TEXT("Failed to create Direct3D Device"), TEXT("Error"), MB_OK);
-	//	return false;
-	//}
-
 	return true;
 }
 
 HRESULT Renderer::InitGeometry()
 {
 	LPD3DXBUFFER pD3DXMtrlBuffer;
-	// Load the mesh from the specified file
 
+	// Load the mesh from the specified file
 	if (FAILED(D3DXLoadMeshFromX(L"Tiger.x", D3DXMESH_SYSTEMMEM,
 		d3ddev, NULL,
 		&pD3DXMtrlBuffer, NULL, &g_dwNumMaterials,
 		&g_pMesh)))
 	{
-		return E_FAIL;
-	}
-	// We need to extract the material properties and texture names from the 
-
-	// pD3DXMtrlBuffer
-
-	D3DXMATERIAL* d3dxMaterials = (D3DXMATERIAL*)pD3DXMtrlBuffer->GetBufferPointer();
-	g_pMeshMaterials = new D3DMATERIAL9[g_dwNumMaterials];
-	g_pMeshTextures = new LPDIRECT3DTEXTURE9[g_dwNumMaterials];
-
-	for (DWORD i = 0; i<g_dwNumMaterials; i++)
-	{
-		// Copy the material
-
-		g_pMeshMaterials[i] = d3dxMaterials[i].MatD3D;
-		// Set the ambient color for the material (D3DX does not do this)
-
-		g_pMeshMaterials[i].Ambient = g_pMeshMaterials[i].Diffuse;
-		// Create the texture
-
-		if (FAILED(D3DXCreateTextureFromFileA(d3ddev,
-			d3dxMaterials[i].pTextureFilename, &g_pMeshTextures[i])))
+		// If model is not in current folder, try parent folder
+		if (FAILED(D3DXLoadMeshFromX(L"..\\Tiger.x", D3DXMESH_SYSTEMMEM,
+			d3ddev, NULL,
+			&pD3DXMtrlBuffer, NULL, &g_dwNumMaterials,
+			&g_pMesh)))
 		{
-			g_pMeshTextures[i] = NULL;
+			MessageBox(NULL, L"Could not find tiger.x", L"Meshes.exe", MB_OK);
+			return E_FAIL;
 		}
 	}
-	// Done with the material buffer
 
+	// We need to extract the material properties and texture names from the 
+	// pD3DXMtrlBuffer
+	D3DXMATERIAL* d3dxMaterials = (D3DXMATERIAL*)pD3DXMtrlBuffer->GetBufferPointer();
+	g_pMeshMaterials = new D3DMATERIAL9[g_dwNumMaterials];
+	if (g_pMeshMaterials == NULL)
+		return E_OUTOFMEMORY;
+	g_pMeshTextures = new LPDIRECT3DTEXTURE9[g_dwNumMaterials];
+	if (g_pMeshTextures == NULL)
+		return E_OUTOFMEMORY;
+
+	for (DWORD i = 0; i < g_dwNumMaterials; i++)
+	{
+		// Copy the material
+		g_pMeshMaterials[i] = d3dxMaterials[i].MatD3D;
+
+		// Set the ambient color for the material (D3DX does not do this)
+		g_pMeshMaterials[i].Ambient = g_pMeshMaterials[i].Diffuse;
+
+		g_pMeshTextures[i] = NULL;
+		if (d3dxMaterials[i].pTextureFilename != NULL &&
+			lstrlenA(d3dxMaterials[i].pTextureFilename) > 0)
+		{
+			// Create the texture
+			if (FAILED(D3DXCreateTextureFromFileA(d3ddev,
+				d3dxMaterials[i].pTextureFilename,
+				&g_pMeshTextures[i])))
+			{
+				// If texture is not in current folder, try parent folder
+				const CHAR* strPrefix = "..\\";
+				CHAR strTexture[MAX_PATH];
+				strcpy_s(strTexture, MAX_PATH, strPrefix);
+				strcat_s(strTexture, MAX_PATH, d3dxMaterials[i].pTextureFilename);
+				// If texture is not in current folder, try parent folder
+				if (FAILED(D3DXCreateTextureFromFileA(d3ddev,
+					strTexture,
+					&g_pMeshTextures[i])))
+				{
+					MessageBox(NULL, L"Could not find texture map", L"Meshes.exe", MB_OK);
+				}
+			}
+		}
+	}
+
+	// Done with the material buffer
 	pD3DXMtrlBuffer->Release();
+
 	return S_OK;
 }
 
