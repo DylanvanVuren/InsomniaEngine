@@ -1,5 +1,4 @@
 #include "Window.h"
-#include "Renderer.h"
 
 Window::Window()
 {
@@ -29,7 +28,8 @@ bool Window::Init(int width, int height) {
 		MessageBox(0, TEXT("Failure. Window was not made."), NULL, 0);
 		return false;
 	}
-	//GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN)
+
+	//GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN) for centering
 	hWnd = CreateWindow(L"Window_1", L"Insomnia Engine Window",
 		WS_OVERLAPPEDWINDOW, 100, 100, width, height,
 		NULL, NULL, wc.hInstance, NULL);

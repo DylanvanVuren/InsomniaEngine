@@ -21,6 +21,8 @@ public:
 	void render_scene();
 	void cleanD3D();    // closes Direct3D and releases memory
 	struct CUSTOMVERTEX { FLOAT X, Y, Z; DWORD COLOR; };
+	void SetupMatrices();
+	HRESULT InitGeometry();
 private:
 	LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 };
