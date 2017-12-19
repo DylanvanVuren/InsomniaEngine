@@ -12,8 +12,8 @@
 #define SCREEN_HEIGHT 800
 
 // include the Direct3D Library file
-#pragma comment (lib, "d3d9.lib")
-#pragma comment (lib, "d3dx9.lib")
+//#pragma comment (lib, "d3d9.lib")
+//#pragma comment (lib, "d3dx9.lib")
 
 // the entry point for any Windows program
 int WINAPI WinMain(HINSTANCE hInstance,

@@ -6,6 +6,8 @@
 #define SCREEN_WIDTH  900
 #define SCREEN_HEIGHT 800
 
+#pragma comment (lib, "d3d9.lib")
+#pragma comment (lib, "d3dx9.lib")
 //Meshes
 LPD3DXMESH          g_pMesh = NULL; // Our mesh object in sysmem
 D3DMATERIAL9*       g_pMeshMaterials = NULL; // Materials for our mesh
@@ -74,70 +76,42 @@ bool Renderer::initD3D(HWND hWnd)
 HRESULT Renderer::InitGeometry()
 {
 	LPD3DXBUFFER pD3DXMtrlBuffer;
-
 	// Load the mesh from the specified file
+
 	if (FAILED(D3DXLoadMeshFromX(L"Tiger.x", D3DXMESH_SYSTEMMEM,
 		d3ddev, NULL,
 		&pD3DXMtrlBuffer, NULL, &g_dwNumMaterials,
 		&g_pMesh)))
 	{
-		// If model is not in current folder, try parent folder
-		if (FAILED(D3DXLoadMeshFromX(L"..\\Tiger.x", D3DXMESH_SYSTEMMEM,
-			d3ddev, NULL,
-			&pD3DXMtrlBuffer, NULL, &g_dwNumMaterials,
-			&g_pMesh)))
-		{
-			MessageBox(NULL, L"Could not find tiger.x", L"InsomniaEngine.exe", MB_OK);
-			return E_FAIL;
-		}
+		return E_FAIL;
 	}
-
 	// We need to extract the material properties and texture names from the 
+
 	// pD3DXMtrlBuffer
+
 	D3DXMATERIAL* d3dxMaterials = (D3DXMATERIAL*)pD3DXMtrlBuffer->GetBufferPointer();
 	g_pMeshMaterials = new D3DMATERIAL9[g_dwNumMaterials];
-	if (g_pMeshMaterials == NULL)
-		return E_OUTOFMEMORY;
 	g_pMeshTextures = new LPDIRECT3DTEXTURE9[g_dwNumMaterials];
-	if (g_pMeshTextures == NULL)
-		return E_OUTOFMEMORY;
 
-	for (DWORD i = 0; i < g_dwNumMaterials; i++)
+	for (DWORD i = 0; i<g_dwNumMaterials; i++)
 	{
 		// Copy the material
+
 		g_pMeshMaterials[i] = d3dxMaterials[i].MatD3D;
-
 		// Set the ambient color for the material (D3DX does not do this)
-		g_pMeshMaterials[i].Ambient = g_pMeshMaterials[i].Diffuse;
 
-		g_pMeshTextures[i] = NULL;
-		if (d3dxMaterials[i].pTextureFilename != NULL &&
-			lstrlenA(d3dxMaterials[i].pTextureFilename) > 0)
+		g_pMeshMaterials[i].Ambient = g_pMeshMaterials[i].Diffuse;
+		// Create the texture
+
+		if (FAILED(D3DXCreateTextureFromFileA(d3ddev,
+			d3dxMaterials[i].pTextureFilename, &g_pMeshTextures[i])))
 		{
-			// Create the texture
-			if (FAILED(D3DXCreateTextureFromFileA(d3ddev,
-				d3dxMaterials[i].pTextureFilename,
-				&g_pMeshTextures[i])))
-			{
-				// If texture is not in current folder, try parent folder
-				const CHAR* strPrefix = "..\\";
-				CHAR strTexture[MAX_PATH];
-				strcpy_s(strTexture, MAX_PATH, strPrefix);
-				strcat_s(strTexture, MAX_PATH, d3dxMaterials[i].pTextureFilename);
-				// If texture is not in current folder, try parent folder
-				if (FAILED(D3DXCreateTextureFromFileA(d3ddev,
-					strTexture,
-					&g_pMeshTextures[i])))
-				{
-					MessageBox(NULL, L"Could not find texture map", L"InsomniaEngine.exe", MB_OK);
-				}
-			}
+			g_pMeshTextures[i] = NULL;
 		}
 	}
-
 	// Done with the material buffer
-	pD3DXMtrlBuffer->Release();
 
+	pD3DXMtrlBuffer->Release();
 	return S_OK;
 }
 
@@ -152,7 +126,7 @@ void Renderer::SetupMatrices()
 	// a point to lookat, and a direction for which way is up. Here, we set the
 	// eye five units back along the z-axis and up three units, look at the 
 	// origin, and define "up" to be in the y-direction.
-	D3DXVECTOR3 vEyePt(0.0f, 3.0f, -5.0f);
+	D3DXVECTOR3 vEyePt(0.0f, 10.0f, -10.0f);
 	D3DXVECTOR3 vLookatPt(0.0f, 0.0f, 0.0f);
 	D3DXVECTOR3 vUpVec(0.0f, 1.0f, 0.0f);
 	D3DXMATRIXA16 matView;
@@ -174,8 +148,9 @@ void Renderer::render_scene() {
 	if (d3ddev == NULL)
 		return;
 
-	// Clear the backbuffer to a blue color
-	clear(D3DCOLOR_XRGB(0, 0, 255));
+	// clear params bewerken   // Clear the backbuffer and the zbuffer
+	d3ddev->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
+		D3DCOLOR_XRGB(0, 0, 255), 1.0f, 0);
 
 	// Begin the scene
 	if (SUCCEEDED(d3ddev->BeginScene()))
