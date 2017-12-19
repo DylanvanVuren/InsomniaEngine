@@ -1,4 +1,3 @@
-
 #include "Renderer.h"
 
 #define SCREEN_WIDTH  900

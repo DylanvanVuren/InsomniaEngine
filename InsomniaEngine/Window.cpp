@@ -1,29 +1,9 @@
 #include "Window.h"
-
-
+#include "Renderer.h"
 
 Window::Window()
 {
-
-	//UNREFERENCED_PARAMETER(hInst);
-	//
-	// Register the window class
-	wc =
-	{
-		sizeof(WNDCLASSEX), CS_CLASSDC, WndProc, 0L, 0L,
-		GetModuleHandle(NULL), NULL, NULL, NULL, NULL,
-		L"Window_1", NULL
-	};
-	RegisterClassEx(&wc);
-
-	// Create the application's window
-	hWnd = CreateWindow(L"Window_1", L"Insomnia Engine Window",
-		WS_OVERLAPPEDWINDOW, 100, 100, 800, 800,
-		NULL, NULL, wc.hInstance, NULL);
-
-	ShowWindow(hWnd, SW_SHOWDEFAULT);
-	UpdateWindow(hWnd);
-
+	Init(500, 500);
 }
 
 
@@ -31,9 +11,38 @@ Window::~Window()
 {
 }
 
+bool Window::Init(int width, int height) {
+
+	wc.cbSize = sizeof(WNDCLASSEX);
+	wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+	wc.lpfnWndProc = WndProc;  // Register the callback function for the window procedure
+	wc.hInstance = hInstance;
+	//wc.hIcon = LoadIcon(hInstance, IDI_APPLICATION));
+	//wc.hCursor = LoadCursor(0, IDC_ARROW);
+	wc.hbrBackground = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
+	wc.lpszMenuName = NULL;
+	wc.lpszClassName = TEXT("Window_1", "Insomnia Engine Window");
+	wc.hIconSm = NULL;
+
+	if (!RegisterClassEx(&wc))
+	{
+		MessageBox(0, TEXT("Failure. Window was not made."), NULL, 0);
+		return false;
+	}
+	//GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN)
+	hWnd = CreateWindow(L"Window_1", L"Insomnia Engine Window",
+		WS_OVERLAPPEDWINDOW, 100, 100, width, height,
+		NULL, NULL, wc.hInstance, NULL);
+
+	ShowWindow(hWnd, SW_SHOWDEFAULT);
+	UpdateWindow(hWnd);
+
+	return true;
+}
+
 LRESULT CALLBACK Window::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	Window *pThis;
+	/*Window *pThis;
 
 	if (msg == WM_NCCREATE)
 	{
@@ -90,10 +99,22 @@ LRESULT CALLBACK Window::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 
 		break;
 
+	}*/
+	//Renderer r;
+	switch (msg)
+	{
+	case WM_DESTROY:
+	{
+		PostQuitMessage(0);
+
+		return 0;
+	}
+		break;
 	}
 
 	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
+
 
 HWND Window::getHandle()
 {

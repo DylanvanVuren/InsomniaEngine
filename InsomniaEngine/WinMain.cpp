@@ -23,13 +23,11 @@ int WINAPI WinMain(HINSTANCE hInstance,
 {
 
 	Window window;
-
 	Renderer renderer;
 
 	renderer.initD3D(window.getHandle());
 
 	// enter the main loop:
-
 	MSG msg;
 
 	while (TRUE)
