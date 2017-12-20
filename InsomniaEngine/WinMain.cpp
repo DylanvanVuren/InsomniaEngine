@@ -4,6 +4,9 @@
 #include <d3d9.h>
 #include <d3dx9.h>
 #include "Window.h"
+#include "Texture.h"  //just for a test
+#include "ResourceManager.h" //just for a test
+#include "Renderer.h" //just for a test
 
 // define the screen resolution
 #define SCREEN_WIDTH  900
@@ -27,8 +30,9 @@ void render_frame(void);    // renders a single frame
 void cleanD3D(void);    // closes Direct3D and releases memory
 void init_graphics(void);    // 3D declarations
 
-struct CUSTOMVERTEX { FLOAT X, Y, Z; DWORD COLOR; };
-struct CUSTOMVERTEX2 { FLOAT X, Y, Z; DWORD COLOR; FLOAT u, v; }; //u,v are texture coordinates
+//struct CUSTOMVERTEX { FLOAT X, Y, Z; DWORD COLOR; }
+struct CUSTOMVERTEX { FLOAT X, Y, Z; DWORD COLOR; FLOAT u, v;}; //u,v are texture coordinates
+
 #define CUSTOMFVF (D3DFVF_XYZ | D3DFVF_DIFFUSE)
 
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam); // the WindowProc function prototype
@@ -46,8 +50,16 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	initD3D(window.getHandle());
 
 	// enter the main loop:
-
 	MSG msg;
+
+	/*Sasha tests the ResourceManager -----------*/
+	//private: ResourceManager m_resourceManager; //this will go in the Kernel header, when WinMain becomes a Kernel
+	ResourceManager m_resourceManager = new ResourceManager();
+	m_resourceManager = ResourceManager::GetInstance();
+
+
+	m_resourceManager.LoadTexture(IDirect3DDevice9* device, char* fileName);
+	/*end of tests of the ResourceManager -----------*/
 
 	while (TRUE)
 	{

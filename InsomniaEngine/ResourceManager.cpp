@@ -45,6 +45,9 @@ LPDIRECT3DTEXTURE9 ResourceManager::GetTextureByName(char* textureName)
 	return NULL;
 }
 
+
+//here we check if an instance exists, and if it doesn't - we make one (it's a bit trippy with the pointers though, idk if it works)
+//remember that the constructor for ResourceManager is private, because we need just one of it
 ResourceManager* ResourceManager::GetInstance()
 {
 	if(m_instance.m_pInstance == NULL )  //m_instance.m_pInstance because a nonstatic member reference 
