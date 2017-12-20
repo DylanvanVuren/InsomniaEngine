@@ -42,14 +42,11 @@ void Renderer::initD3D(HWND hWnd)
 
 	d3ddev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
-
-	init_graphics();    // call the function to initialize the triangle
-
 	d3ddev->SetRenderState(D3DRS_LIGHTING, FALSE);    // turn off the 3D lighting
 
 	d3ddev->SetRenderState(D3DRS_ZENABLE, TRUE);    // turn on the z-buffer
 
-	d3ddev->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);	// wireframe action
+	//d3ddev->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);	// wireframe action
 }
 
 void Renderer::render_frame(void) 
@@ -81,10 +78,11 @@ void Renderer::render_frame(void)
 	// tell Direct3D about our matrix
 	d3ddev->SetTransform(D3DTS_WORLD, &(matRotateX * matRotateY));
 
+	/*
 	D3DXMATRIX matView;    // the view transform matrix
 
 	D3DXMatrixLookAtLH(&matView,
-		&D3DXVECTOR3(0.0f, 0.0f, 50.0f),    // the camera position
+		&D3DXVECTOR3(0.0f, 0.0f, 10.0f),    // the camera position
 		&D3DXVECTOR3(0.0f, 0.0f, 0.0f),    // the look-at position
 		&D3DXVECTOR3(0.0f, 1.0f, 0.0f));    // the up direction
 
@@ -96,11 +94,13 @@ void Renderer::render_frame(void)
 		D3DXToRadian(45),    // the horizontal field of view
 		(FLOAT)SCREEN_WIDTH / (FLOAT)SCREEN_HEIGHT, // aspect ratio
 		1.0f,    // the near view-plane
-		100.0f);    // the far view-plane
+		50.0f);    // the far view-plane
 
 	d3ddev->SetTransform(D3DTS_PROJECTION, &matProjection);    // set the projection
 
-															   // select the vertex buffer to display
+	*/
+	
+	// select the vertex buffer to display
 	d3ddev->SetStreamSource(0, v_buffer, 0, sizeof(CUSTOMVERTEX));
 
 	// copy the vertex buffer to the back buffer
@@ -115,7 +115,7 @@ void Renderer::render_frame(void)
 	// draw the cube
 	d3ddev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 8, 0, 12);
 
-	d3ddev->Present(NULL, NULL, NULL, NULL);   // displays the created frame on the screen
+	d3ddev->Present(NULL, NULL, NULL, NULL);   // displays the created frame on the screen // gebruik 3e null waarde voor window
 }
 
 void Renderer::cleanD3D(void)
@@ -184,4 +184,27 @@ void Renderer::init_graphics(void)
 	i_buffer->Lock(0, 0, (void**)&pVoid, 0);
 	memcpy(pVoid, indices, sizeof(indices));
 	i_buffer->Unlock();
+}
+
+void Renderer::InitCamera(void)
+{
+
+	D3DXMATRIXA16 matView;    // the view transform matrix
+
+	D3DXMatrixLookAtLH(&matView,
+		&D3DXVECTOR3(0.0f, 0.0f, 0.0f),    // the camera position
+		&D3DXVECTOR3(0.0f, 0.0f, 0.0f),    // the look-at position
+		&D3DXVECTOR3(0.0f, 1.0f, 0.0f));    // the up direction
+
+	d3ddev->SetTransform(D3DTS_VIEW, &matView);    // set the view transform to matView
+
+	D3DXMATRIX matProjection;     // the projection transform matrix
+
+	D3DXMatrixPerspectiveFovLH(&matProjection,
+		D3DXToRadian(45),    // the horizontal field of view
+		(FLOAT)SCREEN_WIDTH / (FLOAT)SCREEN_HEIGHT, // aspect ratio
+		1.0f,    // the near view-plane
+		100.0f);    // the far view-plane
+
+	d3ddev->SetTransform(D3DTS_PROJECTION, &matProjection);    // set the projection
 }

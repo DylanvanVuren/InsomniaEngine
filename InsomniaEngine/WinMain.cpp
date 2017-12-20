@@ -6,6 +6,7 @@
 #include "Window.h"
 #include "Renderer.h"
 #include "Kernel.h"
+#include "Mesh.h"
 
 // define the screen resolution
 #define SCREEN_WIDTH  900
@@ -28,6 +29,18 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 	renderer.initD3D(window.getHandle());
 
+	//renderer.init_graphics();
+
+	renderer.InitCamera();
+
+	Mesh mesh;
+
+	mesh.InitGeometry(renderer.d3ddev);
+
+
+
+
+
 	// enter the main loop:
 
 	MSG msg;
@@ -42,13 +55,13 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 		if (msg.message == WM_QUIT)
 			break;
-		
-		renderer.render_frame();
+		mesh.Render(renderer.d3ddev);
+		//renderer.render_frame();
 	}
 
 	// clean up DirectX and COM
 	
-	renderer.cleanD3D();
+	//renderer.cleanD3D();
 
 	return msg.wParam;
 }

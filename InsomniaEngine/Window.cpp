@@ -38,7 +38,6 @@ LRESULT CALLBACK Window::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 	if (msg == WM_NCCREATE)
 	{
 		
-
 		pThis = static_cast<Window*>(reinterpret_cast<CREATESTRUCT*>(lParam)->lpCreateParams);
 
 		SetLastError(0);
