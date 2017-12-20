@@ -16,6 +16,7 @@ bool Window::Init(int width, int height) {
 	wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
 	wc.lpfnWndProc = WndProc;  // Register the callback function for the window procedure
 	wc.hInstance = hInstance;
+	wc.lpfnWndProc = WndProc;
 	//wc.hIcon = LoadIcon(hInstance, IDI_APPLICATION));
 	//wc.hCursor = LoadCursor(0, IDC_ARROW);
 	wc.hbrBackground = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
@@ -30,77 +31,33 @@ bool Window::Init(int width, int height) {
 	}
 
 	//GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN) for centering
-	hWnd = CreateWindow(L"Window_1", L"Insomnia Engine Window",
+	hWnd = CreateWindowEx(NULL,L"Window_1", L"Insomnia Engine Window 1",
 		WS_OVERLAPPEDWINDOW, 100, 100, width, height,
 		NULL, NULL, wc.hInstance, NULL);
 
+	if (hWnd == NULL)
+		return E_FAIL;
+
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
 	UpdateWindow(hWnd);
+
+	//GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN) for centering
+	hWnd2 = CreateWindowEx(NULL,L"Window_1", L"Insomnia Engine Window 2",
+		WS_OVERLAPPEDWINDOW, 100, 100, width, height,
+		NULL, NULL, wc.hInstance, NULL);
+
+	if (hWnd2 == NULL)
+		return E_FAIL;
+
+	ShowWindow(hWnd2, SW_SHOWDEFAULT);
+	UpdateWindow(hWnd2);
 
 	return true;
 }
 
 LRESULT CALLBACK Window::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	/*Window *pThis;
 
-	if (msg == WM_NCCREATE)
-	{
-		
-
-		pThis = static_cast<Window*>(reinterpret_cast<CREATESTRUCT*>(lParam)->lpCreateParams);
-
-		SetLastError(0);
-		if (!SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pThis)))
-		{
-			if (GetLastError() != 0)
-				return FALSE;
-		}
-	}
-	else
-	{
-		pThis = reinterpret_cast<Window*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-	}
-
-	if (pThis)
-	{
-		// use pThis->member as needed...
-	}
-
-	switch (msg)
-	{
-	case WM_DESTROY:
-	{
-		PostQuitMessage(0);
-		return 0;
-	} break;
-
-	case WM_KEYDOWN:
-		if (wParam == 0x57) // W-key pressed
-		{
-			MessageBox(0, L"W Key pressed", L"Key Pressed", MB_OK);
-		}
-
-		if (wParam == 0x53)	//S-key pressed
-		{
-			MessageBox(0, L"S Key pressed", L"Key Pressed", MB_OK);
-		}
-
-		if (wParam == 0x41)	//A-key pressed
-		{
-			MessageBox(0, L"A Key pressed", L"Key Pressed", MB_OK);
-		}
-
-		if (wParam == 0x44)	//D-key pressed
-		{
-			MessageBox(0, L"D Key pressed", L"Key Pressed", MB_OK);
-		}
-
-
-		break;
-
-	}*/
-	//Renderer r;
 	switch (msg)
 	{
 	case WM_DESTROY:
@@ -119,4 +76,9 @@ LRESULT CALLBACK Window::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 HWND Window::getHandle()
 {
 	return hWnd;
+}
+
+HWND Window::getHandle2()
+{
+	return hWnd2;
 }

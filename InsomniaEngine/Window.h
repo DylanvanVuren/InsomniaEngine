@@ -10,7 +10,10 @@ public:
 	~Window();
 
 	HWND getHandle();
+	HWND getHandle2();
 	bool Init(int width, int height);
+	HWND hWnd;
+	HWND hWnd2;
 
 private:
 
@@ -18,6 +21,5 @@ private:
 
 	WNDCLASSEX wc;
 	HINSTANCE hInstance;
-	HWND hWnd;
 };
 

@@ -13,6 +13,8 @@ LPD3DXMESH          g_pMesh = NULL; // Our mesh object in sysmem
 D3DMATERIAL9*       g_pMeshMaterials = NULL; // Materials for our mesh
 LPDIRECT3DTEXTURE9* g_pMeshTextures = NULL; // Textures for our mesh
 DWORD               g_dwNumMaterials = 0L;   // Number of mesh materials
+LPDIRECT3DSWAPCHAIN9 g_swapChain_0 = NULL; // Direct3D swap chain 1 & 2 for multiple windows
+LPDIRECT3DSWAPCHAIN9 g_swapChain_1 = NULL; 
 
 Renderer::Renderer()
 {
@@ -32,7 +34,7 @@ bool Renderer::initD3D(HWND hWnd)
 	ZeroMemory(&d3dpp, sizeof(d3dpp));    // clear out the struct for use
 	d3dpp.Windowed = TRUE;    // program windowed, not fullscreen
 	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;    // discard old frames
-	d3dpp.hDeviceWindow = hWnd;    // set the window to be used by Direct3D
+	//d3dpp.hDeviceWindow = hWnd;    // set the window to be used by Direct3D
 	d3dpp.BackBufferFormat = D3DFMT_UNKNOWN;
 	d3dpp.EnableAutoDepthStencil = TRUE;
 	d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
@@ -46,6 +48,13 @@ bool Renderer::initD3D(HWND hWnd)
 		MessageBox(0, TEXT("Failed to create Direct3D Device"), TEXT("Error"), MB_OK);
 		return false;
 	}
+
+	// After CreateDevice, the first swap chain already exists, so just get it...
+	d3ddev->GetSwapChain(0, &g_swapChain_0);
+
+	// create second swap chain
+	d3ddev->CreateAdditionalSwapChain(&d3dpp, &g_swapChain_1);
+
 	//d3ddev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
 	//Onderse 3 setrstate misg weg?
@@ -157,9 +166,14 @@ void Renderer::SetupMatrices()
 	d3ddev->SetTransform(D3DTS_PROJECTION, &matProj);
 }
 
-void Renderer::render_scene() {
+//window 1
+void Renderer::render_scene(HWND hwnd) {
 	if (d3ddev == NULL)
 		return;
+
+	LPDIRECT3DSURFACE9 pBackBuffer = NULL;
+	g_swapChain_0->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &pBackBuffer);
+	d3ddev->SetRenderTarget(0, pBackBuffer);
 
 	// clear params bewerken   // Clear the backbuffer and the zbuffer
 	d3ddev->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
@@ -188,7 +202,48 @@ void Renderer::render_scene() {
 	}
 
 	// Present the backbuffer contents to the display
-	d3ddev->Present(NULL, NULL, NULL, NULL);
+	g_swapChain_0->Present(NULL, NULL, hwnd, NULL,0);
+	pBackBuffer->Release();
+}
+
+//window 2
+void Renderer::render_scene2(HWND hwnd) {
+	if (d3ddev == NULL)
+		return;
+
+	LPDIRECT3DSURFACE9 pBackBuffer = NULL;
+	g_swapChain_1->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &pBackBuffer);
+	d3ddev->SetRenderTarget(0, pBackBuffer);
+
+	// clear params bewerken   // Clear the backbuffer and the zbuffer
+	d3ddev->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
+		D3DCOLOR_XRGB(0, 0, 255), 1.0f, 0);
+
+	// Begin the scene
+	if (SUCCEEDED(d3ddev->BeginScene()))
+	{
+		// Rendering of scene objects can happen here
+		// Setup the world, view, and projection matrices
+		SetupMatrices();
+
+		// Meshes are divided into subsets, one for each material. Render them in
+		// a loop
+		for (DWORD i = 0; i < g_dwNumMaterials; i++)
+		{
+			// Set the material and texture for this subset
+			d3ddev->SetMaterial(&g_pMeshMaterials[i]);
+			d3ddev->SetTexture(0, g_pMeshTextures[i]);
+
+			// Draw the mesh subset
+			g_pMesh->DrawSubset(i);
+		}
+		// End the scene
+		d3ddev->EndScene();
+	}
+
+	// Present the backbuffer contents to the display
+	g_swapChain_1->Present(NULL, NULL, hwnd, NULL,0);
+	pBackBuffer->Release();
 }
 
 void Renderer::clear(D3DCOLOR color) {
@@ -209,6 +264,14 @@ void Renderer::cleanD3D() {
 		}
 		delete[] g_pMeshTextures;
 	}
+
+	if (g_swapChain_0 != NULL)
+		g_swapChain_0->Release();
+
+	if (g_swapChain_1 != NULL)
+		g_swapChain_1->Release();
+
+
 	if (g_pMesh != NULL)
 		g_pMesh->Release();
 

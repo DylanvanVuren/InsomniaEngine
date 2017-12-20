@@ -18,13 +18,15 @@ public:
 											// function prototypes
 	bool initD3D(HWND hWnd);    // sets up and initializes Direct3D
 	void clear(D3DCOLOR color);
-	void render_scene();
+	void render_scene(HWND hwnd);
+	void render_scene2(HWND hwnd);
 	void cleanD3D();    // closes Direct3D and releases memory
 	struct CUSTOMVERTEX { FLOAT X, Y, Z; DWORD COLOR; };
 	void SetupMatrices();
 	HRESULT InitGeometry();
 private:
 	LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	HWND hwnd; // Handle to the first window
 };
 
 
