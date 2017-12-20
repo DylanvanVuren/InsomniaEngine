@@ -28,6 +28,7 @@ void cleanD3D(void);    // closes Direct3D and releases memory
 void init_graphics(void);    // 3D declarations
 
 struct CUSTOMVERTEX { FLOAT X, Y, Z; DWORD COLOR; };
+struct CUSTOMVERTEX2 { FLOAT X, Y, Z; DWORD COLOR; FLOAT u, v; }; //u,v are texture coordinates
 #define CUSTOMFVF (D3DFVF_XYZ | D3DFVF_DIFFUSE)
 
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam); // the WindowProc function prototype

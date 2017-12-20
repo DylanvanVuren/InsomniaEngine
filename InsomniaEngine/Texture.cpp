@@ -59,7 +59,7 @@
 		{
 			m_name = m_name.substr(pos + 1, m_name.length()); //if it has a root directory - remove it
 		}
-		//m_name = m_name.substr(0, m_name.find_last_of(".")); //remove the extention. UPD: i think it needs the extention after all
+		m_name = m_name.substr(0, m_name.find_last_of(".")); //remove the extention. UPD: i think it needs the extention after all
 
 		//loading the texture from an image file	
 		result = D3DXCreateTextureFromFile(device, fileName, &m_texture);

@@ -148,14 +148,24 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Logger.cpp" />
+    <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="ResourceManager.cpp" />
+    <ClCompile Include="ResourceTexture.cpp" />
+    <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Window.cpp" />
+    <ClCompile Include="WindowManager.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Logger.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="ResourceManager.h" />
+    <ClInclude Include="ResourceTexture.h" />
+    <ClInclude Include="Texture.h" />
     <ClInclude Include="Window.h" />
+    <ClInclude Include="WindowManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
