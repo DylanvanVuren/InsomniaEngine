@@ -2,6 +2,8 @@
 #include <windows.h>
 #include <iostream>
 #include "logger.h"
+#include <vector>
+
 #pragma comment(lib, "winmm.lib")
 #define SCREEN_WIDTH  900
 #define SCREEN_HEIGHT 800
@@ -68,98 +70,101 @@ bool Renderer::initD3D(HWND hWnd)
 //todo: krijg een entitylist of 1 entity van een entity of scene oid. ipv static 
 HRESULT Renderer::loadEntities() {
 
-	ENTITY a = { L"Tiger.x", 5.0, 0.0, 0.0, 0.0 };
+	ENTITY a = { L"temple.x", 5.0, 0.0, 0.0, 0.0 };
 	ENTITY b = { L"Tiger.x", 5.0, 0.0, 0.0, 0.0 };
-	ENTITY c = { L"Tiger.x", 5.0, 0.0, 0.0, 0.0 };
-	ENTITY d = { L"Tiger.x", 5.0, 0.0, 0.0, 0.0 };
-	ENTITY entitylist[] = { a, b, c, d };
+	//ENTITY c = { L"Tiger.x", 5.0, 0.0, 0.0, 0.0 };
+	//ENTITY d = { L"Tiger.x", 5.0, 0.0, 0.0, 0.0 };
+	ENTITY entitylist[] = { a, b/*, c, d*/ };
 	
-
+	//D3DXMATERIAL* materialsList[(sizeof entitylist) / (sizeof *entitylist)];
 	//maak meshmateriallijst aan, maak texturematerial list aan. extract ze via initgeometry
-	for (DWORD i = 0; i < ((sizeof entitylist) / (sizeof *entitylist)); i++) {
+	/*for (DWORD i = 0; i < ((sizeof entitylist) / (sizeof *entitylist)); i++) {
 		drawEntity(entitylist[i]);
-	}
+	}*/
+	InitGeometry(entitylist);
 	
 	return S_OK;
+
 }
 
-void Renderer::drawEntity(ENTITY entity)
-{
-	InitGeometry(entity.meshPath);
-}
 
-HRESULT Renderer::InitGeometry(std::wstring meshPath)
+HRESULT Renderer::InitGeometry(ENTITY entitylist[])
 {
-	LPD3DXBUFFER pD3DXMtrlBuffer;
-
-	// Load the mesh from the specified file
-		if (FAILED(D3DXLoadMeshFromX(meshPath.c_str(), D3DXMESH_SYSTEMMEM,
-			d3ddev, NULL,
-			&pD3DXMtrlBuffer, NULL, &g_dwNumMaterials,
-			&g_pMesh)))
-		{
-			// If model is not in current folder, try parent folder
-			if (FAILED(D3DXLoadMeshFromX(meshPath.c_str(), D3DXMESH_SYSTEMMEM,
+	std::vector<D3DXMATERIAL*> d3dxMaterialsList;
+	D3DXMATERIAL* d3dxMaterials;
+	std::vector<DWORD> materialSizeList;
+	int u = ((sizeof entitylist) / (sizeof *entitylist));
+	for (DWORD i = 0; i < 2; i++) { //hier en andere plekken de size van entitylist ipv hardcoded 4
+		LPD3DXBUFFER pD3DXMtrlBuffer;
+		if (FAILED(D3DXLoadMeshFromX(entitylist[i].meshPath.c_str(), D3DXMESH_SYSTEMMEM,
 				d3ddev, NULL,
 				&pD3DXMtrlBuffer, NULL, &g_dwNumMaterials,
 				&g_pMesh)))
 			{
-				MessageBox(NULL, L"Could not find mesh", L"Meshes.exe", MB_OK);
-				return E_FAIL;
+				// If model is not in current folder, try parent folder
+				if (FAILED(D3DXLoadMeshFromX(entitylist[i].meshPath.c_str(), D3DXMESH_SYSTEMMEM,
+					d3ddev, NULL,
+					&pD3DXMtrlBuffer, NULL, &g_dwNumMaterials,
+					&g_pMesh)))
+				{
+					MessageBox(NULL, L"Could not find mesh", L"Meshes.exe", MB_OK);
+					return E_FAIL;
+				}
 			}
-		}
-
-	// We need to extract the material properties and texture names from the 
-	// pD3DXMtrlBuffer
-	D3DXMATERIAL* d3dxMaterials = (D3DXMATERIAL*)pD3DXMtrlBuffer->GetBufferPointer();
+			g_dwNumTotalMaterials += g_dwNumMaterials;
+			materialSizeList.push_back(g_dwNumMaterials);
+			d3dxMaterials = (D3DXMATERIAL*)pD3DXMtrlBuffer->GetBufferPointer();
+			d3dxMaterialsList.push_back(d3dxMaterials);
+			pD3DXMtrlBuffer->Release();
+		// We need to extract the material properties and texture names from the 
+		// pD3DXMtrlBuffer
+	}
 	
-	
-	g_pMeshMaterials = new D3DMATERIAL9[g_dwNumMaterials];
+	g_pMeshMaterials = new D3DMATERIAL9[g_dwNumTotalMaterials];
 	if (g_pMeshMaterials == NULL)
 		return E_OUTOFMEMORY;
-	g_pMeshTextures = new LPDIRECT3DTEXTURE9[g_dwNumMaterials];
+	g_pMeshTextures = new LPDIRECT3DTEXTURE9[g_dwNumTotalMaterials];
 	if (g_pMeshTextures == NULL)
 		return E_OUTOFMEMORY;
-	
-	
-	for (DWORD i = 0; i < g_dwNumMaterials; i++)
+	DWORD k = 0;
+	//iterate through every entity, and for every entity, all its materials. set the textures and meshes.
+	for (DWORD i = 0; i < 2; i++) 
 	{	
-		// Copy the material
-		g_pMeshMaterials[i] = d3dxMaterials[i].MatD3D;
-
-		// Set the ambient color for the material (D3DX does not do this)
-		g_pMeshMaterials[i].Ambient = g_pMeshMaterials[i].Diffuse;
-		
-		g_pMeshTextures[i] = NULL;
-		if (d3dxMaterials[i].pTextureFilename != NULL &&
-			lstrlenA(d3dxMaterials[i].pTextureFilename) > 0)
+		for (DWORD j = 0; j < materialSizeList[i]; j++)
 		{
-			// Create the texture
-			if (FAILED(D3DXCreateTextureFromFileA(d3ddev,
-				d3dxMaterials[i].pTextureFilename,
-				&g_pMeshTextures[i])))
+			// Copy the material
+			g_pMeshMaterials[k + j] = d3dxMaterialsList[i][j].MatD3D;
+
+			// Set the ambient color for the material (D3DX does not do this)
+			g_pMeshMaterials[k + j].Ambient = g_pMeshMaterials[k + j].Diffuse;
+
+			g_pMeshTextures[k + j] = NULL;
+			if (d3dxMaterialsList[i][j].pTextureFilename != NULL &&
+				lstrlenA(d3dxMaterialsList[i][j].pTextureFilename) > 0)
 			{
-				// If texture is not in current folder, try parent folder
-				const CHAR* strPrefix = "..\\";
-				CHAR strTexture[MAX_PATH];
-				strcpy_s(strTexture, MAX_PATH, strPrefix);
-				strcat_s(strTexture, MAX_PATH, d3dxMaterials[i].pTextureFilename);
-				// If texture is not in current folder, try parent folder
+				// Create the texture
 				if (FAILED(D3DXCreateTextureFromFileA(d3ddev,
-					strTexture,
-					&g_pMeshTextures[i])))
+					d3dxMaterialsList[i][j].pTextureFilename,
+					&g_pMeshTextures[k + j])))
 				{
-					MessageBox(NULL, L"Could not find texture map", L"Meshes.exe", MB_OK);
+					// If texture is not in current folder, try parent folder
+					const CHAR* strPrefix = "..\\";
+					CHAR strTexture[MAX_PATH];
+					strcpy_s(strTexture, MAX_PATH, strPrefix);
+					strcat_s(strTexture, MAX_PATH, d3dxMaterialsList[i][j].pTextureFilename);
+					// If texture is not in current folder, try parent folder
+					if (FAILED(D3DXCreateTextureFromFileA(d3ddev,
+						strTexture,
+						&g_pMeshTextures[k + j])))
+					{
+						MessageBox(NULL, L"Could not find texture map", L"Meshes.exe", MB_OK);
+					}
 				}
 			}
 		}
-		g_dwNumTotalMaterials += 1;
+		k += materialSizeList[i]; //increase the iterator for the mesh and texturelist (k = the total number of materials it put in the list
 	}
-	
-
 	// Done with the material buffer
-	pD3DXMtrlBuffer->Release();
-
 	return S_OK;
 }
 //transformMatrix word gebruikt om de worldMatrix te transformeren. todo: scaling, meer rotaties, zelf de matrix aangeven
@@ -169,6 +174,7 @@ D3DXMATRIXA16 Renderer::transformMatrix(FLOAT xTranslate, FLOAT yTranslate, FLOA
 	D3DXMatrixScaling(&matScale, 1.0f, 1.0f, 1.0f);
 	D3DXMatrixTranslation(&matTranslate, xTranslate, yTranslate, zTranslate);
 	D3DXMatrixRotationY(&matRotate, yRotate);
+	//rotation als je dat leuk vind..
 	D3DXMatrixRotationY(&matYrotation, timeGetTime() / 1000.0f);  
 
 	matWorld = matScale * matTranslate * matRotate * matYrotation;
@@ -184,7 +190,7 @@ void Renderer::SetupMatrices()
 	// a point to lookat, and a direction for which way is up. Here, we set the
 	// eye five units back along the z-axis and up three units, look at the 
 	// origin, and define "up" to be in the y-direction.
-	D3DXVECTOR3 vEyePt(0.0f, 3.0f, -15.0f);
+	D3DXVECTOR3 vEyePt(0.0f, 15.0f, -30.0f);
 	D3DXVECTOR3 vLookatPt(0.0f, 0.0f, 0.0f);
 	D3DXVECTOR3 vUpVec(0.0f, 1.0f, 0.0f);
 	D3DXMATRIXA16 matView;
@@ -222,21 +228,23 @@ void Renderer::render_scene(HWND hwnd) {
 		SetupMatrices();
 		// Meshes are divided into subsets, one for each material. Render them in
 		// a loop
-		for (DWORD i = 0; i < g_dwNumMaterials; i++){
+		for (DWORD i = 0; i < 2; i++){
 
 			// Set the material and texture for this subset
 			d3ddev->SetMaterial(&g_pMeshMaterials[i]);
 			d3ddev->SetTexture(0, g_pMeshTextures[i]);
 			// Draw the mesh subset
-			transformMatrix(5.0, 0.0, 0.0, 0.0);
+			transformMatrix(0.0, 0.0, 0.0, 0.0);
 			g_pMesh->DrawSubset(i);
 			// change the worldspace to the place you want the object
+			/* //code for cloning stuff, delete this when done testing
 			transformMatrix(5.0, 0.0, 0.0, 3.14);
 			g_pMesh->DrawSubset(i);
 			transformMatrix(5.0, 0.0, 0.0, 1.57);
 			g_pMesh->DrawSubset(i);
 			transformMatrix(5.0, 0.0, 0.0, 4.71);
 			g_pMesh->DrawSubset(i);
+			*/
 		}
 		// End the scene
 		d3ddev->EndScene();
@@ -267,21 +275,23 @@ void Renderer::render_scene2(HWND hwnd) {
 		SetupMatrices();
 		// Meshes are divided into subsets, one for each material. Render them in
 		// a loop
-		for (DWORD i = 0; i < g_dwNumMaterials; i++) {
+		for (DWORD i = 0; i < g_dwNumTotalMaterials; i++) {
 
 			// Set the material and texture for this subset
 			d3ddev->SetMaterial(&g_pMeshMaterials[i]);
 			d3ddev->SetTexture(0, g_pMeshTextures[i]);
 			// Draw the mesh subset
-			transformMatrix(5.0, 0.0, 0.0, 0.0);
+			transformMatrix(0.0, 0.0, 0.0, 0.0);
 			g_pMesh->DrawSubset(i);
 			// change the worldspace to the place you want the object
+			/* //code for cloning stuff, delete this when done testing
 			transformMatrix(5.0, 0.0, 0.0, 3.14);
 			g_pMesh->DrawSubset(i);
 			transformMatrix(5.0, 0.0, 0.0, 1.57);
 			g_pMesh->DrawSubset(i);
 			transformMatrix(5.0, 0.0, 0.0, 4.71);
 			g_pMesh->DrawSubset(i);
+			*/
 		}
 		// End the scene
 		d3ddev->EndScene();

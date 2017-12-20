@@ -29,9 +29,8 @@ public:
 	std::list<ENTITY*> entitylist;
 
 	void SetupMatrices();
-	HRESULT InitGeometry(std::wstring meshPath);
+	HRESULT InitGeometry(ENTITY entitylist[]);
 	HRESULT loadEntities();
-	void drawEntity(ENTITY entity);
 
 	D3DXMATRIXA16 transformMatrix(FLOAT xTranslate, FLOAT yTranslate, FLOAT zTranslate, FLOAT yRotate);
 
