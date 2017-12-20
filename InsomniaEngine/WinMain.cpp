@@ -29,24 +29,23 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	// enter the main loop:
 	MSG msg;
 	if (SUCCEEDED(renderer.initD3D(window.getHandle()))) {
-		if (SUCCEEDED(renderer.InitGeometry())) {
-			while (TRUE)
+		renderer.loadEntities();
+		while (TRUE)
+		{
+			while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 			{
-				while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-				{
-					TranslateMessage(&msg);
-					DispatchMessage(&msg);
-				}
-
-				if (msg.message == WM_QUIT)
-					break;
-
-				renderer.render_scene();
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
 			}
 
-			// clean up DirectX and COM
-			renderer.cleanD3D();
+			if (msg.message == WM_QUIT)
+				break;
+			renderer.render_scene();
 		}
+
+		// clean up DirectX and COM
+		renderer.cleanD3D();
+		
 	}
 	return msg.wParam;
 }
