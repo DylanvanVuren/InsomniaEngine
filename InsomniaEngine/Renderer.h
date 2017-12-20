@@ -1,6 +1,6 @@
 #include <d3d9.h>
 #include <d3dx9.h>
-
+#include <list>
 class Renderer
 {
 public:
@@ -21,11 +21,21 @@ public:
 	void render_scene(HWND hwnd);
 	void render_scene2(HWND hwnd);
 	void cleanD3D();    // closes Direct3D and releases memory
+
 	struct CUSTOMVERTEX { FLOAT X, Y, Z; DWORD COLOR; };
+	struct ENTITY { std::wstring meshPath; FLOAT xTranslate, yTranslate, zTranslate, yRotate;}; //we use this untill the entity class and resource loader are completed.
+	struct TRANSFORMATION {FLOAT xTranslate, yTranslate, zTranslate, yRotate;};
+
+	std::list<ENTITY*> entitylist;
+
 	void SetupMatrices();
-	HRESULT InitGeometry();
+	HRESULT InitGeometry(std::wstring meshPath);
+	HRESULT loadEntities();
+	void drawEntity(ENTITY entity);
+
+	D3DXMATRIXA16 transformMatrix(FLOAT xTranslate, FLOAT yTranslate, FLOAT zTranslate, FLOAT yRotate);
+
 private:
-	LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	HWND hwnd; // Handle to the first window
 };
 
