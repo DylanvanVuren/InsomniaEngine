@@ -32,6 +32,9 @@ public:
 	HRESULT InitGeometry(ENTITY entitylist[]);
 	HRESULT loadEntities();
 
+	D3DXMATERIAL* getMaterials();
+
+
 	D3DXMATRIXA16 transformMatrix(FLOAT xTranslate, FLOAT yTranslate, FLOAT zTranslate, FLOAT yRotate);
 
 private:

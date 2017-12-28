@@ -88,6 +88,8 @@ HRESULT Renderer::loadEntities() {
 }
 
 
+
+
 HRESULT Renderer::InitGeometry(ENTITY entitylist[])
 {
 	std::vector<D3DXMATERIAL*> d3dxMaterialsList;
