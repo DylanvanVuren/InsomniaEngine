@@ -153,7 +153,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DxRenderer.cpp" />
     <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="Kernel.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Texture.cpp" />
@@ -162,6 +164,7 @@
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DxRenderer.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="Kernel.h" />
     <ClInclude Include="Logger.h" />
