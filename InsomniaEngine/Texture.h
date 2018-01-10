@@ -23,7 +23,7 @@ public:
 	int GetWidth();
 	int GetHeight();
 
-	bool Initialize(IDirect3DDevice9* device, LPCTSTR fileName);
+	bool LoadTexture(IDirect3DDevice9* device, LPCTSTR textureFileName);
 
 private:
 	int m_width;  // m_... means a member variable (as opposed to a local variable), it's not necessary but good practice

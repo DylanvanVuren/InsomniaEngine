@@ -11,14 +11,22 @@ ResourceManager::~ResourceManager(void)
 		delete m_textureList[0];
 		m_textureList.erase(m_textureList.begin());
 	}
+
+	while (!m_meshList.empty())
+	{
+		delete m_meshList[0];
+		m_meshList.erase(m_meshList.begin());
+	}
+
+
 }
 
-void ResourceManager::LoadTexture(IDirect3DDevice9* device, char* fileName) 
+void ResourceManager::LoadTextureRM(IDirect3DDevice9* device, char* fileName) 
 {
 	Texture* texture = new Texture();
 
 	LPCTSTR fileNameLPCTSRT = CA2W(fileName); //convert a char array to pointer with the ATL conversion helper
-	if (!texture->Initialize(device, fileNameLPCTSRT)) //if it doesn't Initialize, send a message
+	if (!texture->LoadTexture(device, fileNameLPCTSRT)) //if it doesn't Initialize, send a message
 	{
 		delete texture;
 		std::cout << "Could not Initialize texture " << fileName << std::endl;
@@ -43,6 +51,22 @@ LPDIRECT3DTEXTURE9 ResourceManager::GetTextureByName(char* textureName)
 	}
 
 	return NULL;
+}
+
+void ResourceManager::LoadMeshRM(IDirect3DDevice9* device, char* fileName)
+{
+	Mesh* mesh = new Mesh();
+
+	LPCTSTR fileNameLPCTSRT = CA2W(fileName); //convert a char array to pointer with the ATL conversion helper
+	if (!mesh->LoadMesh(device, fileNameLPCTSRT)) //if it doesn't load, send a message
+	{
+		delete mesh;
+		std::cout << "Could not Initialize mesh " << fileName << std::endl;
+		return;
+	}
+	//else add it to the list of meshes
+	m_meshList.push_back(mesh);
+	std::cout << "Successfully loaded the mesh " << fileName << std::endl;
 }
 
 
