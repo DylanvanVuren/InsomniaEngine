@@ -1,149 +1,32 @@
-/*
 #include "Renderer.h"
+#include <windows.h>
+#include <iostream>
+#include "logger.h"
+#pragma comment(lib, "winmm.lib")
+#define SCREEN_WIDTH  900
+#define SCREEN_HEIGHT 800
 
-LPDIRECT3D9 d3d;    // the pointer to our Direct3D interface
-LPDIRECT3DDEVICE9 d3ddev;    // the pointer to the device class
-LPDIRECT3DVERTEXBUFFER9 v_buffer = NULL;    // the pointer to the vertex buffer	
-LPDIRECT3DINDEXBUFFER9 i_buffer = NULL;    // the pointer to the index buffer
-LPDIRECT3DTEXTURE9      g_pTexture = NULL; // Our texture
+#pragma comment (lib, "d3d9.lib")
+#pragma comment (lib, "d3dx9.lib")
+//Meshes
+LPD3DXMESH          g_pMesh = NULL; // Our mesh object in sysmem
+D3DMATERIAL9*       g_pMeshMaterials = NULL; // Materials for our mesh
+LPDIRECT3DTEXTURE9* g_pMeshTextures = NULL; // Textures for our mesh
+DWORD               g_dwNumMaterials = 0L;   // Number of mesh materials
+DWORD				g_dwNumTotalMaterials = 0L; //total number of materials over all meshes
 
-struct CUSTOMVERTEX { FLOAT X, Y, Z; DWORD COLOR; };
-#define CUSTOMFVF (D3DFVF_XYZ | D3DFVF_DIFFUSE)
 
-LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);// the WindowProc function prototype
-// the entry point for any Windows program
 
-int WINAPI WinMain(HINSTANCE hInstance,
-	HINSTANCE hPrevInstance,
-	LPSTR lpCmdLine,
-	int nCmdShow)
+
+Renderer::Renderer()
 {
-	HWND hWnd;
-	HWND hWnd2;
-
-	WNDCLASSEX wc;
-	WNDCLASSEX wc2;
-
-
-	ZeroMemory(&wc, sizeof(WNDCLASSEX));
-	ZeroMemory(&wc2, sizeof(WNDCLASSEX));
-
-
-	wc.cbSize = sizeof(WNDCLASSEX);
-	wc.style = CS_HREDRAW | CS_VREDRAW;
-	wc.lpfnWndProc = WindowProc;
-	wc.hInstance = hInstance;
-	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-	//wc.hbrBackground = (HBRUSH)COLOR_WINDOW; // to leave the background color untouched.
-	wc.lpszClassName = _T("WindowClass");
-
-	wc2.cbSize = sizeof(WNDCLASSEX);
-	wc2.style = CS_HREDRAW | CS_VREDRAW;
-	wc2.lpfnWndProc = WindowProc;
-	wc2.hInstance = hInstance;
-	wc2.hCursor = LoadCursor(NULL, IDC_ARROW);
-	//wc.hbrBackground = (HBRUSH)COLOR_WINDOW; // to leave the background color untouched.
-	wc2.lpszClassName = _T("WindowClass2");
-
-	RegisterClassEx(&wc);
-
-	RegisterClassEx(&wc2);
-
-
-	hWnd = CreateWindowEx(NULL,
-		_T("WindowClass"),
-		_T(""),
-		WS_EX_TOPMOST | WS_OVERLAPPEDWINDOW,
-		0, 0, // start position should be 0 for fullscreen
-		SCREEN_WIDTH, SCREEN_HEIGHT,
-		NULL,
-		NULL,
-		hInstance,
-		NULL);
-
-	hWnd2 = CreateWindowEx(NULL,
-		_T("WindowClass2"),
-		_T(""),
-		WS_EX_TOPMOST | WS_OVERLAPPEDWINDOW,
-		0, 0, // start position should be 0 for fullscreen
-		SCREEN_WIDTH, SCREEN_HEIGHT,
-		NULL,
-		NULL,
-		hInstance,
-		NULL);
-
-	ShowWindow(hWnd, nCmdShow);
-
-	ShowWindow(hWnd2, nCmdShow);		// show second window
-
-
-										// set up and initialize Direct3D
-	initD3D(hWnd);
-
-	// enter the main loop:
-
-	MSG msg;
-
-	while (TRUE)
-	{
-		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-
-		if (msg.message == WM_QUIT)
-			break;
-		render_frame();
-	}
-
-	// clean up DirectX and COM
-	cleanD3D();
-
-	return msg.wParam;
 }
 
-LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+Renderer::~Renderer()
 {
-	switch (message)
-	{
-	case WM_DESTROY:
-	{
-		PostQuitMessage(0);
-		return 0;
-	} break;
-
-	case WM_KEYDOWN:
-		if (wParam == 0x57) // W-key pressed
-		{
-			MessageBox(0, L"W Key pressed", L"Key Pressed", MB_OK);
-		}
-
-		if (wParam == 0x53)	//S-key pressed
-		{
-			MessageBox(0, L"S Key pressed", L"Key Pressed", MB_OK);
-		}
-
-		if (wParam == 0x41)	//A-key pressed
-		{
-			MessageBox(0, L"A Key pressed", L"Key Pressed", MB_OK);
-		}
-
-		if (wParam == 0x44)	//D-key pressed
-		{
-			MessageBox(0, L"D Key pressed", L"Key Pressed", MB_OK);
-		}
-
-
-		break;
-
-	}
-
-	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
-// this function initializes and prepares Direct3D for use
-void initD3D(HWND hWnd)
+bool Renderer::initD3D(HWND hWnd)
 {
 	d3d = Direct3DCreate9(D3D_SDK_VERSION);    // create the Direct3D interface
 
@@ -153,182 +36,234 @@ void initD3D(HWND hWnd)
 	d3dpp.Windowed = TRUE;    // program windowed, not fullscreen
 	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;    // discard old frames
 	d3dpp.hDeviceWindow = hWnd;    // set the window to be used by Direct3D
-	d3dpp.BackBufferFormat = D3DFMT_X8R8G8B8;    // set the back buffer format to 32-bit
-	d3dpp.BackBufferWidth = SCREEN_WIDTH;    // set the width of the buffer
-	d3dpp.BackBufferHeight = SCREEN_HEIGHT;    // set the height of the buffer
+	d3dpp.BackBufferFormat = D3DFMT_UNKNOWN;
 	d3dpp.EnableAutoDepthStencil = TRUE;
 	d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
+	//anti ailising
+	//d3dpp.MultiSampleType = D3DMULTISAMPLE_;
 
 	// create a device class using this information and the info from the d3dpp stuc
-
-	d3d->CreateDevice(D3DADAPTER_DEFAULT,
-		D3DDEVTYPE_HAL,
-		hWnd,
+	if (FAILED(d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
 		D3DCREATE_SOFTWARE_VERTEXPROCESSING,
-		&d3dpp,
-		&d3ddev);
+		&d3dpp, &d3ddev))) {
+		MessageBox(0, TEXT("Failed to create Direct3D Device"), TEXT("Error"), MB_OK);
+		return false;
+	}
+	//d3ddev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
-	d3ddev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-
-
-	init_graphics();    // call the function to initialize the triangle
-
-	d3ddev->SetRenderState(D3DRS_LIGHTING, FALSE);    // turn off the 3D lighting
+	//Onderse 3 setrstate misg weg?
+	//d3ddev->SetRenderState(D3DRS_LIGHTING, FALSE);    // turn off the 3D lighting
 
 	d3ddev->SetRenderState(D3DRS_ZENABLE, TRUE);    // turn on the z-buffer
+	d3ddev->SetRenderState(D3DRS_AMBIENT, 0xffffffff);
 
-
+	//d3ddev->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);	// wireframe action
+	return true;
 }
 
-// this is the function used to render a single frame
-void render_frame(void)
+//todo: krijg een entitylist of 1 entity van een entity of scene oid. ipv static 
+HRESULT Renderer::loadEntities() {
+
+	ENTITY a = { L"Tiger.x", 5.0, 0.0, 0.0, 0.0 };
+	ENTITY b = { L"Tiger.x", 5.0, 0.0, 0.0, 0.0 };
+	ENTITY c = { L"Tiger.x", 5.0, 0.0, 0.0, 0.0 };
+	ENTITY d = { L"Tiger.x", 5.0, 0.0, 0.0, 0.0 };
+	ENTITY entitylist[] = { a, b, c, d };
+	
+
+	//maak meshmateriallijst aan, maak texturematerial list aan. extract ze via initgeometry
+	for (DWORD i = 0; i < ((sizeof entitylist) / (sizeof *entitylist)); i++) {
+		drawEntity(entitylist[i]);
+	}
+	
+	return S_OK;
+}
+
+void Renderer::drawEntity(ENTITY entity)
 {
+	InitGeometry(entity.meshPath);
+}
+
+HRESULT Renderer::InitGeometry(std::wstring meshPath)
+{
+	LPD3DXBUFFER pD3DXMtrlBuffer;
+
+	// Load the mesh from the specified file
+		if (FAILED(D3DXLoadMeshFromX(meshPath.c_str(), D3DXMESH_SYSTEMMEM,
+			d3ddev, NULL,
+			&pD3DXMtrlBuffer, NULL, &g_dwNumMaterials,
+			&g_pMesh)))
+		{
+			// If model is not in current folder, try parent folder
+			if (FAILED(D3DXLoadMeshFromX(meshPath.c_str(), D3DXMESH_SYSTEMMEM,
+				d3ddev, NULL,
+				&pD3DXMtrlBuffer, NULL, &g_dwNumMaterials,
+				&g_pMesh)))
+			{
+				MessageBox(NULL, L"Could not find mesh", L"Meshes.exe", MB_OK);
+				return E_FAIL;
+			}
+		}
+
+	// We need to extract the material properties and texture names from the 
+	// pD3DXMtrlBuffer
+	D3DXMATERIAL* d3dxMaterials = (D3DXMATERIAL*)pD3DXMtrlBuffer->GetBufferPointer();
+	
+	
+	g_pMeshMaterials = new D3DMATERIAL9[g_dwNumMaterials];
+	if (g_pMeshMaterials == NULL)
+		return E_OUTOFMEMORY;
+	g_pMeshTextures = new LPDIRECT3DTEXTURE9[g_dwNumMaterials];
+	if (g_pMeshTextures == NULL)
+		return E_OUTOFMEMORY;
+	
+	
+	for (DWORD i = 0; i < g_dwNumMaterials; i++)
+	{	
+		// Copy the material
+		g_pMeshMaterials[i] = d3dxMaterials[i].MatD3D;
+
+		// Set the ambient color for the material (D3DX does not do this)
+		g_pMeshMaterials[i].Ambient = g_pMeshMaterials[i].Diffuse;
+		
+		g_pMeshTextures[i] = NULL;
+		if (d3dxMaterials[i].pTextureFilename != NULL &&
+			lstrlenA(d3dxMaterials[i].pTextureFilename) > 0)
+		{
+			// Create the texture
+			if (FAILED(D3DXCreateTextureFromFileA(d3ddev,
+				d3dxMaterials[i].pTextureFilename,
+				&g_pMeshTextures[i])))
+			{
+				// If texture is not in current folder, try parent folder
+				const CHAR* strPrefix = "..\\";
+				CHAR strTexture[MAX_PATH];
+				strcpy_s(strTexture, MAX_PATH, strPrefix);
+				strcat_s(strTexture, MAX_PATH, d3dxMaterials[i].pTextureFilename);
+				// If texture is not in current folder, try parent folder
+				if (FAILED(D3DXCreateTextureFromFileA(d3ddev,
+					strTexture,
+					&g_pMeshTextures[i])))
+				{
+					MessageBox(NULL, L"Could not find texture map", L"Meshes.exe", MB_OK);
+				}
+			}
+		}
+		g_dwNumTotalMaterials += 1;
+	}
+	
+
+	// Done with the material buffer
+	pD3DXMtrlBuffer->Release();
+
+	return S_OK;
+}
+//transformMatrix word gebruikt om de worldMatrix te transformeren. todo: scaling, meer rotaties, zelf de matrix aangeven
+D3DXMATRIXA16 Renderer::transformMatrix(FLOAT xTranslate, FLOAT yTranslate, FLOAT zTranslate, FLOAT yRotate) { 
+	// Set up world matrix
+	D3DXMATRIXA16 matWorld, matTranslate, matScale, matRotate, matYrotation;
+	D3DXMatrixScaling(&matScale, 1.0f, 1.0f, 1.0f);
+	D3DXMatrixTranslation(&matTranslate, xTranslate, yTranslate, zTranslate);
+	D3DXMatrixRotationY(&matRotate, yRotate);
+	D3DXMatrixRotationY(&matYrotation, timeGetTime() / 1000.0f);  
+
+	matWorld = matScale * matTranslate * matRotate * matYrotation;
+	d3ddev->SetTransform(D3DTS_WORLD, &matWorld);
+
+	return(matWorld);
+}
+
+void Renderer::SetupMatrices()
+{
+	transformMatrix(0.0, 0.0, 0.0, 0.0);
+	// Set up our view matrix. A view matrix can be defined given an eye point,
+	// a point to lookat, and a direction for which way is up. Here, we set the
+	// eye five units back along the z-axis and up three units, look at the 
+	// origin, and define "up" to be in the y-direction.
+	D3DXVECTOR3 vEyePt(0.0f, 3.0f, -15.0f);
+	D3DXVECTOR3 vLookatPt(0.0f, 0.0f, 0.0f);
+	D3DXVECTOR3 vUpVec(0.0f, 1.0f, 0.0f);
+	D3DXMATRIXA16 matView;
+	D3DXMatrixLookAtLH(&matView, &vEyePt, &vLookatPt, &vUpVec);
+	d3ddev->SetTransform(D3DTS_VIEW, &matView);
+
+	// For the projection matrix, we set up a perspective transform (which
+	// transforms geometry from 3D view space to 2D viewport space, with
+	// a perspective divide making objects smaller in the distance). To build
+	// a perpsective transform, we need the field of view (1/4 pi is common),
+	// the aspect ratio, and the near and far clipping planes (which define at
+	// what distances geometry should be no longer be rendered).
+	D3DXMATRIXA16 matProj;
+	D3DXMatrixPerspectiveFovLH(&matProj, D3DX_PI / 4, 1.0f, 1.0f, 100.0f);
+	d3ddev->SetTransform(D3DTS_PROJECTION, &matProj);
+}
+
+void Renderer::render_scene() {
+	if (d3ddev == NULL)
+		return;
+
+	// clear params bewerken   // Clear the backbuffer and the zbuffer
+	d3ddev->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
+		D3DCOLOR_XRGB(0, 0, 255), 1.0f, 0);
+
+	// Begin the scene
+	if (SUCCEEDED(d3ddev->BeginScene()))
+	{
+		// Rendering of scene objects can happen here
+		// Setup the world, view, and projection matrices
+		SetupMatrices();
+		// Meshes are divided into subsets, one for each material. Render them in
+		// a loop
+		for (DWORD i = 0; i < g_dwNumMaterials; i++){
+
+			// Set the material and texture for this subset
+			d3ddev->SetMaterial(&g_pMeshMaterials[i]);
+			d3ddev->SetTexture(0, g_pMeshTextures[i]);
+			// Draw the mesh subset
+			transformMatrix(5.0, 0.0, 0.0, 0.0);
+			g_pMesh->DrawSubset(i);
+			// change the worldspace to the place you want the object
+			transformMatrix(5.0, 0.0, 0.0, 3.14);
+			g_pMesh->DrawSubset(i);
+			transformMatrix(5.0, 0.0, 0.0, 1.57);
+			g_pMesh->DrawSubset(i);
+			transformMatrix(5.0, 0.0, 0.0, 4.71);
+			g_pMesh->DrawSubset(i);
+		}
+		// End the scene
+		d3ddev->EndScene();
+	}
+
+	// Present the backbuffer contents to the display
+	d3ddev->Present(NULL, NULL, NULL, NULL);
+}
+
+void Renderer::clear(D3DCOLOR color) {
 	// clear the window
-	d3ddev->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
-
-	d3ddev->Clear(0, NULL, D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
-
-	d3ddev->BeginScene();    // begins the 3D scene
-
-							 // do 3D rendering on the back buffer here
-							 // select which vertex format we are using
-	d3ddev->SetFVF(CUSTOMFVF);
-
-
-	// SET UP THE PIPELINE
-
-	D3DXMATRIX matRotateY;    // a matrix to store the rotation information
-	D3DXMATRIX matRotateX;
-
-
-	static float index = 0.0f; index += 0.02f;    // an ever-increasing float value
-
-												  // build a matrix to rotate the model based on the increasing float value
-	D3DXMatrixRotationY(&matRotateY, index);
-	D3DXMatrixRotationX(&matRotateX, index);
-
-	// tell Direct3D about our matrix
-	d3ddev->SetTransform(D3DTS_WORLD, &(matRotateX * matRotateY));
-
-	D3DXMATRIX matView;    // the view transform matrix
-
-	D3DXMatrixLookAtLH(&matView,
-		&D3DXVECTOR3(0.0f, 0.0f, 50.0f),    // the camera position
-		&D3DXVECTOR3(0.0f, 0.0f, 0.0f),    // the look-at position
-		&D3DXVECTOR3(0.0f, 1.0f, 0.0f));    // the up direction
-
-	d3ddev->SetTransform(D3DTS_VIEW, &matView);    // set the view transform to matView
-
-	D3DXMATRIX matProjection;     // the projection transform matrix
-
-	D3DXMatrixPerspectiveFovLH(&matProjection,
-		D3DXToRadian(45),    // the horizontal field of view
-		(FLOAT)SCREEN_WIDTH / (FLOAT)SCREEN_HEIGHT, // aspect ratio
-		1.0f,    // the near view-plane
-		100.0f);    // the far view-plane
-
-	d3ddev->SetTransform(D3DTS_PROJECTION, &matProjection);    // set the projection
-
-															   // select the vertex buffer to display
-	d3ddev->SetStreamSource(0, v_buffer, 0, sizeof(CUSTOMVERTEX));
-
-	// copy the vertex buffer to the back buffer
-	d3ddev->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 2);
-
-	d3ddev->EndScene();    // ends the 3D scene
-
-						   // select the vertex and index buffers to use
-	d3ddev->SetStreamSource(0, v_buffer, 0, sizeof(CUSTOMVERTEX));
-	d3ddev->SetIndices(i_buffer);
-
-	// draw the cube
-	d3ddev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 8, 0, 12);
-
-	d3ddev->Present(NULL, NULL, NULL, NULL);   // displays the created frame on the screen
-
-
+	d3ddev->Clear(0, NULL, D3DCLEAR_TARGET, color, 1.0f, 0);
 }
 
+void Renderer::cleanD3D() {
+	if (g_pMeshMaterials != NULL)
+		delete[] g_pMeshMaterials;
 
-// this is the function that cleans up Direct3D and COM
-void cleanD3D(void)
-{
-	v_buffer->Release();    // close and release the vertex buffer
-	d3ddev->Release();    // close and release the 3D device
-	d3d->Release();    // close and release Direct3D
-}
-
-// this is the function that puts the 3D models into video RAM
-void init_graphics(void)
-{
-	// create the vertices using the CUSTOMVERTEX struct
-	CUSTOMVERTEX vertices[] =
+	if (g_pMeshTextures)
 	{
-		{ -6.0f, 6.0f, -6.0f, D3DCOLOR_XRGB(0, 0, 255), },
-		{ 6.0f, 6.0f, -6.0f, D3DCOLOR_XRGB(0, 255, 0), },
-		{ -6.0f, -6.0f, -6.0f, D3DCOLOR_XRGB(255, 0, 0), },
-		{ 6.0f, -6.0f, -6.0f, D3DCOLOR_XRGB(0, 255, 255), },
-		{ -6.0f, 6.0f, 6.0f, D3DCOLOR_XRGB(0, 0, 255), },
-		{ 6.0f, 6.0f, 6.0f, D3DCOLOR_XRGB(255, 0, 0), },
-		{ -6.0f, -6.0f, 6.0f, D3DCOLOR_XRGB(0, 255, 0), },
-		{ 6.0f, -6.0f, 6.0f, D3DCOLOR_XRGB(0, 255, 255), },
-	};
+		for (DWORD i = 0; i < g_dwNumTotalMaterials; i++) //size of meshtextures
+		{
+			if (g_pMeshTextures[i])
+				g_pMeshTextures[i]->Release();
+		}
+		delete[] g_pMeshTextures;
+	}
+	if (g_pMesh != NULL)
+		g_pMesh->Release();
 
-	// create a vertex buffer interface called v_buffer
-	d3ddev->CreateVertexBuffer(8 * sizeof(CUSTOMVERTEX),
-		0,
-		CUSTOMFVF,
-		D3DPOOL_MANAGED,
-		&v_buffer,
-		NULL);
+	if (d3ddev != NULL)
+		d3ddev->Release();
 
-	VOID* pVoid;    // a void pointer
-
-					// lock v_buffer and load the vertices into it
-	v_buffer->Lock(0, 0, (void**)&pVoid, 0);
-	memcpy(pVoid, vertices, sizeof(vertices));
-	v_buffer->Unlock();
-
-	// create the indices using an int array
-	short indices[] =
-	{
-		0, 1, 2,    // side 1
-		2, 1, 3,
-		4, 0, 6,    // side 2
-		6, 0, 2,
-		7, 5, 6,    // side 3
-		6, 5, 4,
-		3, 1, 7,    // side 4
-		7, 1, 5,
-		4, 5, 0,    // side 5
-		0, 5, 1,
-		3, 7, 2,    // side 6
-		2, 7, 6,
-	};
-
-	// create an index buffer interface called i_buffer
-	d3ddev->CreateIndexBuffer(36 * sizeof(short),
-		0,
-		D3DFMT_INDEX16,
-		D3DPOOL_MANAGED,
-		&i_buffer,
-		NULL);
-
-	// lock i_buffer and load the indices into it
-	i_buffer->Lock(0, 0, (void**)&pVoid, 0);
-	memcpy(pVoid, indices, sizeof(indices));
-	i_buffer->Unlock();
+	if (d3d != NULL)
+		d3d->Release();
 }
 
-void Renderer::cleanup()
-{
-}
 
-void Renderer::translate()
-{
-}
-
-void Renderer::render()
-{
-}
-*/

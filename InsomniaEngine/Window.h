@@ -9,16 +9,15 @@ public:
 	Window();
 	~Window();
 
-	static LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-	
-
 	HWND getHandle();
+	bool Init(int width, int height);
 
 private:
 
+	static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 	WNDCLASSEX wc;
-	
+	HINSTANCE hInstance;
 	HWND hWnd;
 };
 
